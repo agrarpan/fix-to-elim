@@ -129,7 +129,7 @@ let premise_of_case env ind_fam (ctxt, body) =
         let args = Array.append (Array.map shift indices) [|mkRel 1|] in
         let rec_type = prod_appvect (shift_by j fix_type) args in
         let fix_call = mkApp (mkRel j, args) in
-        mkLambda (fix_name, rec_type, abstract_subterm fix_call body)
+        mkLambda (Context.annotR fix_name, rec_type, abstract_subterm fix_call body)
       | _ ->
         body
     in mkLambda_or_LetIn decl body'
@@ -271,7 +271,7 @@ let desugar_fixpoint env sigma fix_pos fix_name fix_type fix_term =
     shift_local 1 1 |> Vars.subst1 fix_self |> Reduction.nf_betaiota rec_env
   in
   (* Desugar the simple recursive function into an elimination form *)
-  let sigma, rec_elim = desugar_recursion env sigma ind_fam fix_name rec_type rec_term in
+  let sigma, rec_elim = desugar_recursion env sigma ind_fam (Context.annotR fix_name) rec_type rec_term in
   (* Wrap the elimination form to reorder initial arguments *)
   sigma, recompose_lam_assum fix_ctxt (mkApp (rec_elim, rec_args))
 
@@ -293,7 +293,7 @@ let desugar_match env sigma info pred discr cases =
   let ind_fam = make_ind_family (pind, Array.to_list params) in
   let sigma, elim_head = configure_eliminator env sigma ind_fam typ in
   let premises =
-    let fix_env = push_local (Name.Anonymous, typ) env in
+    let fix_env = push_local (Context.annotR Name.Anonymous, typ) env in
     let cases = Array.map shift cases in
     let build_premise cons_case cons_sum =
       let cons_sum = lift_constructor 1 cons_sum in
@@ -324,7 +324,7 @@ let desugar_constr env sigma trm =
         | Fix (([|fix_pos|], 0), ([|fix_name|], [|fix_type|], [|fix_term|])) ->
            aux
              env
-             (desugar_fixpoint env sigma fix_pos fix_name fix_type fix_term)
+             (desugar_fixpoint env sigma fix_pos (Context.binder_name fix_name) fix_type fix_term)
         | Fix _ ->
            user_err "desugar" err_mutual_recursion [try_opaque] [cool_feature]
         | CoFix _ ->
@@ -343,7 +343,7 @@ let desugar_constr env sigma trm =
   in
   let sigma, trm' = aux env (sigma, trm) in
   try
-    let _ = Typing.e_type_of env (ref sigma) (EConstr.of_constr trm') in
+    let _ = Typing.type_of env sigma (EConstr.of_constr trm') in
     sigma, trm'
   with PretypeError (env, sigma, err) ->
     user_err

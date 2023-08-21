@@ -1,10 +1,11 @@
-DECLARE PLUGIN "fixtoelim"
+DECLARE PLUGIN "elim_plugin"
+
+{
 
 open Stdarg
 open Desugar
 open Names
 open Transform
-open Nameutils
 open Substitution
 open Util
 open Global
@@ -17,8 +18,8 @@ open Declarations
 open Preprocess_errors
 open Options
 
-module Globmap = Globnames.Refmap
-module Globset = Globnames.Refset
+module Globmap = Names.GlobRef.Map
+module Globset = Names.GlobRef.Set
 module DPset = Set.Make(DirPath)
 
 (*
@@ -194,17 +195,17 @@ let do_desugar_module ?(opaques=[]) ?(transparents=[]) ident mod_ref =
   let consts = all_transitive_constants env m exceptions exception_mods in
   let init () = List.fold_left include_constant Globmap.empty consts in
   ignore (transform_module_structure ~init ~opaques ident desugar_constr m)
-
+}
 (* --- Commands --- *)
 
 (* Desugar any/all fix/match subterms into eliminator applications *)
 VERNAC COMMAND EXTEND TranslateMatch CLASSIFIED AS SIDEFF
 | [ "Preprocess" reference(const_ref) "as" ident(id) ] ->
-  [ do_desugar_constant id const_ref ]
+  { do_desugar_constant id const_ref }
 | [ "Preprocess" "Module" reference(mod_ref) "as" ident(id) ] ->
-  [ do_desugar_module id mod_ref ]
+  { do_desugar_module id mod_ref }
 | [ "Preprocess" "Module" reference(mod_ref) "as" ident(id) "{" "opaque" ne_reference_list(opaq_refs) "}" ] ->
-  [ do_desugar_module ~opaques:opaq_refs id mod_ref ]
+  { do_desugar_module ~opaques:opaq_refs id mod_ref }
 | [ "Preprocess" "Module" reference(mod_ref) "as" ident(id) "{" "transparent" ne_reference_list(transp_refs) "}" ] ->
-  [ do_desugar_module ~transparents:transp_refs id mod_ref ]
+  { do_desugar_module ~transparents:transp_refs id mod_ref }
 END
