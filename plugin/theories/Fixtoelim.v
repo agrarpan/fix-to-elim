@@ -1,2 +1,2 @@
-Declare ML Module "example_plugin".
-Declare ML Module "elim_plugin".
+(* Declare ML Module "example_plugin". *)
+Declare ML Module "fixtoelim".

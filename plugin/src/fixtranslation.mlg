@@ -1,4 +1,4 @@
-DECLARE PLUGIN "elim_plugin"
+DECLARE PLUGIN "fixtoelim"
 
 {
 
@@ -45,7 +45,7 @@ let initialize_opaque_set exceptions =
   List.fold_left
     (fun (consts, mods) id ->
       try
-        Globset.add (ConstRef (locate_constant id)) consts, mods
+        Globset.add (Names.GlobRef.ConstRef (locate_constant id)) consts, mods
       with Not_found ->
         try
           consts, DPset.add (ModPath.dp (locate_module id)) mods
@@ -64,14 +64,14 @@ let initialize_opaque_set exceptions =
 let append_dedupe l1 l2 =
   let l1_globs =
     List.fold_right
-      (fun t -> Globset.add (ConstRef (fst (destConst t))))
+      (fun t -> Globset.add (Names.GlobRef.ConstRef (fst (destConst t))))
       l1
       Globset.empty
   in
   List.append
     l1
     (List.filter
-       (fun t -> not (Globset.mem (ConstRef (fst (destConst t))) l1_globs))
+       (fun t -> not (Globset.mem (Names.GlobRef.ConstRef (fst (destConst t))) l1_globs))
        l2)
     
 (*
