@@ -46,7 +46,7 @@ let decompose_indvect env ind_type sigma =
     with _ ->
       failwith "type passed to decompose_indvect must be an inductive type"
   in
-  let nparam = inductive_nparams (out_punivs pind) in
+  let nparam = inductive_nparams env (out_punivs pind) in
   let params, indices = Array.chop nparam args in
   sigma, (pind, params, indices)
 
@@ -182,7 +182,7 @@ let expand_case env sigma case_term cons_sum =
  *)
 let configure_eliminator env sigma ind_fam typ =
   let ind, params = dest_ind_family ind_fam |> on_fst out_punivs in
-  let nb = inductive_nrealargs ind + 1 in
+  let nb = inductive_nrealargs env ind + 1 in
   let typ_ctxt, typ_body =
     let typ_ctxt, typ_body = decompose_prod_n_assum nb typ in
     let ind_sort = get_arity env ind_fam |> snd in
@@ -194,7 +194,7 @@ let configure_eliminator env sigma ind_fam typ =
   let sigma, elim =
     let typ_env = Environ.push_rel_context typ_ctxt env in
     let sigma, typ_sort = infer_sort typ_env sigma typ_body in
-    let elim_trm = Indrec.lookup_eliminator ind typ_sort in
+    let elim_trm = Indrec.lookup_eliminator env ind typ_sort in
     new_global sigma elim_trm
   in
   let motive = recompose_lam_assum typ_ctxt typ_body in
