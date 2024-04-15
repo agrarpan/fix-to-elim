@@ -1,4 +1,4 @@
 [submodule "plugin/src/coq-plugin-lib"]
 	path = plugin/src/coq-plugin-lib
 	url = https://github.com/agrarpan/coq-plugin-lib.git
-	branch = coq-8.12
+	branch = coq-8.13
