@@ -329,7 +329,7 @@ let desugar_constr env sigma trm =
            user_err "desugar" err_mutual_recursion [try_opaque] [cool_feature]
         | CoFix _ ->
            user_err "desugar" err_corecursion [try_opaque] [cool_feature]
-        | Case (info, pred, discr, cases) ->
+        | Case (info, pred, iv, discr, cases) ->
            aux
              env
              (desugar_match env sigma info pred discr cases)
