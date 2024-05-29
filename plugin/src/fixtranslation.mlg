@@ -126,7 +126,7 @@ let all_transitive_constants env m exceptions exception_mods =
             if not (add_h || recurse) then
               []
             else
-              all_const_subterms
+              all_const_subterms env
                 (fun _ t ->
                   if (not add_h) && equal h_delta t then
                     false
@@ -178,7 +178,7 @@ let do_desugar_module ?(opaques=[]) ?(transparents=[]) ident mod_ref =
     let suffix = Id.to_string glob_ident in
     let ident = Id.of_string (String.concat "_" (snoc suffix prefixes)) in
     let const = fst (destConst trm) in
-    let tr_constr env sigma = subst_globals subst %> desugar_constr env sigma in
+    let tr_constr env sigma = subst_globals env subst %> desugar_constr env sigma in
     let c = lookup_constant const in
     let is_exception = Globset.mem (Names.GlobRef.ConstRef const) exceptions || DPset.mem dp exception_mods in
     if is_exception <> default_opaque then
